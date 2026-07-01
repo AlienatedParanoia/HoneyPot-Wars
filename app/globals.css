@@ -6,15 +6,47 @@
   --text: #F0F0F0;
   --red: #FF3B3B;
   --green: #39FF14;
+
+  /* Aliases consumed by <FallingPattern>'s defaults (shadcn-style tokens).
+     Passing explicit props overrides these; they exist so the component also
+     works standalone (e.g. in components/ui/demo.tsx). */
+  --primary: var(--gold);
+  --background: var(--bg);
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Solid base color sits *behind* the fixed backdrop so there is never a flash
+     of white before the animation paints. */
+  background: var(--bg);
+}
 body {
   margin: 0;
-  background: var(--bg);
+  /* Transparent so the fixed <FallingPattern> backdrop (mounted in layout.tsx)
+     shows through. The html background above is the fallback base. */
+  background: transparent;
   color: var(--text);
   font-family: var(--font-vt323), monospace;
+}
+
+/* ---- site-wide falling-pattern backdrop (mounted once in app/layout.tsx) ----
+   Fixed, full-viewport, behind all page content, never interactive.
+   Kept subtle so foreground text/cards stay readable — raise `opacity` toward 1
+   for a bolder effect. */
+.hw-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+/* Page content stacks above the backdrop (which is z-index:0). */
+.hw-content { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Push the backdrop further back for reduced-motion users. */
+  .hw-bg-layer { opacity: 0.35; }
 }
 img, .sprite { image-rendering: pixelated; image-rendering: crisp-edges; }
 ::selection { background: var(--gold); color: var(--bg); }

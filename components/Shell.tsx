@@ -16,9 +16,11 @@ export function Shell({
   right?: React.ReactNode;
 }) {
   return (
-    <div style={{ background: C.bg, minHeight: '100vh', padding: '18px', fontFamily: 'var(--font-vt323), monospace', color: C.text }}>
+    <div style={{ background: 'transparent', minHeight: '100vh', padding: '18px', fontFamily: 'var(--font-vt323), monospace', color: C.text }}>
       <div style={{ maxWidth, margin: '0 auto' }}>
-        <div style={{ padding: '28px' }}>
+        {/* Solid arcade panel keeps forms/tables readable over the animated
+            backdrop; the backdrop shows through the page margins around it. */}
+        <div style={{ padding: '28px', background: C.panel, border: `2px solid ${C.gold}`, boxShadow: `4px 4px 0px ${C.cyan}` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '8px' }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
               <span className="font-press" style={{ fontSize: '12px', color: C.gold }}>[H·W]</span>

@@ -19,7 +19,7 @@ function PageBreak({ pt = '40px', pb = '40px' }: { pt?: string; pb?: string }) {
   return (
     <div
       aria-hidden="true"
-      style={{ display: 'flex', alignItems: 'center', gap: '14px', justifyContent: 'center', padding: `${pt} 40px ${pb}`, background: C.bg }}
+      style={{ display: 'flex', alignItems: 'center', gap: '14px', justifyContent: 'center', padding: `${pt} 40px ${pb}`, background: 'transparent' }}
     >
       <div style={{ height: '4px', flex: '1', background: C.panel }} />
       <span className="font-press" style={{ fontSize: '11px', color: C.gold, letterSpacing: '4px' }}>⬡ ⬡ ⬡</span>
@@ -117,8 +117,8 @@ export default function LandingPage() {
   const revealScale = { opacity: '0', transform: 'scale(0.95)', transition: 'opacity .35s ease-out, transform .35s ease-out' } as const;
 
   return (
-    <div ref={rootRef} style={{ background: C.bg, minHeight: '100vh', fontFamily: 'var(--font-vt323), monospace' }}>
-      <div style={{ width: '100%', background: C.bg }}>
+    <div ref={rootRef} style={{ background: 'transparent', minHeight: '100vh', fontFamily: 'var(--font-vt323), monospace' }}>
+      <div style={{ width: '100%', background: 'transparent' }}>
       <div>
 
         {/* NAV */}
@@ -141,7 +141,7 @@ export default function LandingPage() {
 
         <main>
           {/* HERO */}
-          <section aria-label="Hero" style={{ padding: '64px 40px 0', background: C.bg }}>
+          <section aria-label="Hero" style={{ padding: '64px 40px 0', background: 'transparent' }}>
             <div className="hw-hero">
               <div>
                 <p style={{ fontSize: '20px', color: C.cyan, letterSpacing: '5px', margin: '0 0 28px' }}>FRAUD DEFENCE · COVERAGE ASSURANCE · MARKETPLACE SECURITY</p>
@@ -191,7 +191,7 @@ export default function LandingPage() {
           <PageBreak />
 
           {/* PROBLEM */}
-          <section id="problem" aria-label="The problem" style={{ padding: '40px 40px 80px', background: C.bg }}>
+          <section id="problem" aria-label="The problem" style={{ padding: '40px 40px 80px', background: 'transparent' }}>
             <p data-reveal="up" style={{ ...revealUp, textAlign: 'center', fontSize: '20px', color: C.cyan, letterSpacing: '6px', margin: '0 0 16px' }}>THE PROBLEM</p>
             <h2 data-reveal="up" data-delay="120" className="font-press" style={{ ...revealUp, textAlign: 'center', color: C.text, fontSize: '24px', lineHeight: '1.5', letterSpacing: '1px', margin: '0 0 56px' }}>YOU DON&apos;T KNOW WHAT YOU&apos;RE MISSING</h2>
             <div className="hw-cols2">
@@ -229,7 +229,7 @@ export default function LandingPage() {
           <PageBreak pt="0" />
 
           {/* HOW IT WORKS */}
-          <section id="how" aria-label="How it works" style={{ padding: '40px 40px 80px', background: C.bg }}>
+          <section id="how" aria-label="How it works" style={{ padding: '40px 40px 80px', background: 'transparent' }}>
             <p data-reveal="up" style={{ ...revealUp, textAlign: 'center', fontSize: '20px', color: C.cyan, letterSpacing: '6px', margin: '0 0 16px' }}>HOW IT WORKS</p>
             <h2 data-reveal="up" data-delay="120" className="font-press" style={{ ...revealUp, textAlign: 'center', color: C.gold, fontSize: '24px', letterSpacing: '1px', margin: '0 0 56px' }}>STRESS-TEST YOUR DEFENCES</h2>
             <div className="hw-steps">
@@ -261,7 +261,7 @@ export default function LandingPage() {
           <PageBreak pt="0" />
 
           {/* WHAT YOU GET */}
-          <section id="what" aria-label="What you get" style={{ padding: '40px 40px 80px', background: C.bg }}>
+          <section id="what" aria-label="What you get" style={{ padding: '40px 40px 80px', background: 'transparent' }}>
             <p data-reveal="up" style={{ ...revealUp, textAlign: 'center', fontSize: '20px', color: C.cyan, letterSpacing: '6px', margin: '0 0 16px' }}>WHAT YOU GET</p>
             <h2 data-reveal="up" data-delay="120" className="font-press" style={{ ...revealUp, textAlign: 'center', color: C.text, fontSize: '24px', letterSpacing: '1px', margin: '0 0 56px' }}>YOUR COVERAGE REPORT</h2>
             <div className="hw-cols3">
@@ -322,7 +322,7 @@ export default function LandingPage() {
         </main>
 
         {/* FOOTER */}
-        <footer style={{ padding: '36px 40px', background: C.bg }}>
+        <footer style={{ padding: '36px 40px', background: 'transparent' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span className="font-press" style={{ fontSize: '12px', color: C.gold, letterSpacing: '1px' }}>[H·W]</span>
