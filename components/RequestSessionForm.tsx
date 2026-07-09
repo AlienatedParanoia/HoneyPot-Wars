@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { C } from '@/lib/theme';
-import { inputStyle, labelStyle, buttonStyle } from '@/components/Shell';
+import { labelStyle } from '@/components/Shell';
+import { Button } from '@/components/ui/button';
 
 export function RequestSessionForm({ accountId }: { accountId: string }) {
   const router = useRouter();
@@ -42,27 +43,30 @@ export function RequestSessionForm({ accountId }: { accountId: string }) {
   return (
     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div>
-        <label style={labelStyle} htmlFor="repo">GITHUB REPOSITORY URL</label>
-        <input id="repo" style={inputStyle} type="url" placeholder="https://github.com/you/your-repo" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} required />
+        <label style={labelStyle} htmlFor="repo">GitHub repository URL</label>
+        <input id="repo" className="hw-input" type="url" placeholder="https://github.com/you/your-repo" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} required />
       </div>
       <div>
-        <label style={labelStyle} htmlFor="deploy">DEPLOYED APP URL (OPTIONAL)</label>
-        <input id="deploy" style={inputStyle} type="url" placeholder="https://app.example.com" value={deploymentUrl} onChange={(e) => setDeploymentUrl(e.target.value)} />
+        <label style={labelStyle} htmlFor="deploy">Deployed app URL (optional)</label>
+        <input id="deploy" className="hw-input" type="url" placeholder="https://app.example.com" value={deploymentUrl} onChange={(e) => setDeploymentUrl(e.target.value)} />
       </div>
       <div>
-        <label style={labelStyle} htmlFor="notes">ANYTHING WE SHOULD KNOW? (OPTIONAL)</label>
-        <textarea id="notes" style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={notes} onChange={(e) => setNotes(e.target.value)} />
+        <label style={labelStyle} htmlFor="notes">Anything we should know? (optional)</label>
+        <textarea id="notes" className="hw-input" style={{ minHeight: '90px', resize: 'vertical' }} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </div>
-      <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '17px', letterSpacing: '1px', lineHeight: '1.4', cursor: 'pointer' }}>
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: '4px', width: '18px', height: '18px', accentColor: C.gold }} />
-        <span>I AGREE THAT TESTING IS LIMITED TO THE DOMAIN I REGISTERED, NO RAW PAYLOADS OR SECRETS ARE STORED, AND I ACCEPT THE LIMITATION OF LIABILITY.</span>
+      <label style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', fontSize: '14px', lineHeight: 1.55, color: C.muted, cursor: 'pointer' }}>
+        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: C.accent, flex: 'none' }} />
+        <span>
+          I agree that testing is limited to the domain I registered, that no raw payloads or secrets are stored, and
+          I accept the limitation of liability.
+        </span>
       </label>
 
-      {error && <p style={{ color: C.red, fontSize: '18px', letterSpacing: '1px', margin: '0' }}>⚠ {error}</p>}
+      {error && <p style={{ color: C.high, fontSize: '14px', margin: '0' }}>{error}</p>}
 
-      <button type="submit" style={{ ...buttonStyle, opacity: loading ? 0.6 : 1 }} disabled={loading}>
-        {loading ? '...' : '▓▓ REQUEST SESSION ▓▓'}
-      </button>
+      <Button type="submit" disabled={loading} style={{ justifyContent: 'center' }}>
+        {loading ? '…' : 'Request session'}
+      </Button>
     </form>
   );
 }

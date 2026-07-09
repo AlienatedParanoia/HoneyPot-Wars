@@ -1,12 +1,17 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Shell } from '@/components/Shell';
+import { Shell, panelStyle, BackLink } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { UploadReportForm } from '@/components/UploadReportForm';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { C } from '@/lib/theme';
+import { C, MONO } from '@/lib/theme';
 import type { Profile, Report, SessionRequest } from '@/lib/types';
+
+const STATUS_COLOR: Record<string, string> = {
+  approved: C.ok,
+  rejected: C.high,
+  pending: C.muted,
+};
 
 export default async function AdminClientPage({ params }: { params: { id: string } }) {
   await requireAdmin();
@@ -25,49 +30,73 @@ export default async function AdminClientPage({ params }: { params: { id: string
   ]);
 
   return (
-    <Shell title={(profile.company_name || profile.email).toUpperCase()} subtitle={`STATUS: ${profile.account_status.toUpperCase()}`} maxWidth="100%" right={<SignOutButton />}>
-      <Link href="/admin" style={{ color: C.cyan, fontSize: '18px' }}>← BACK TO CONSOLE</Link>
+    <Shell
+      title={profile.company_name || profile.email}
+      subtitle={`Status: ${profile.account_status}`}
+      maxWidth="100%"
+      right={<SignOutButton />}
+    >
+      <BackLink />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', marginTop: '18px' }}>
-        <div style={{ border: `2px solid ${C.gold}`, padding: '18px' }}>
-          <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '8px' }}>CLIENT</div>
-          <div style={{ fontSize: '20px' }}>EMAIL: {profile.email}</div>
-          <div style={{ fontSize: '20px' }}>DOMAIN: {profile.registered_domain || '—'}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginTop: '18px' }}>
+        <div style={panelStyle}>
+          <div className="hw-mono-label">Client</div>
+          <div style={{ fontSize: '15px', color: C.muted, marginTop: '12px' }}>Email: {profile.email}</div>
+          <div style={{ fontSize: '15px', color: C.muted }}>Domain: {profile.registered_domain || '—'}</div>
         </div>
 
-        <div style={{ border: `2px solid ${C.cyan}`, padding: '18px' }}>
-          <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '8px' }}>SESSION REQUESTS</div>
+        <div style={panelStyle}>
+          <div className="hw-mono-label">Session requests</div>
           {requests && requests.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '14px 0 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {requests.map((r) => (
-                <li key={r.id} style={{ fontSize: '19px' }}>
-                  <span style={{ color: C.cyan }}>{r.repo_url}</span> — <span style={{ color: r.status === 'approved' ? C.green : r.status === 'rejected' ? C.red : C.gold }}>{r.status.toUpperCase()}</span>
+                <li key={r.id} style={{ fontSize: '14px' }}>
+                  <span style={{ fontFamily: MONO, color: C.accent }}>{r.repo_url}</span>
+                  {' — '}
+                  <span style={{ color: STATUS_COLOR[r.status] ?? C.text }}>{r.status}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p style={{ fontSize: '20px', margin: 0 }}>NO REQUESTS.</p>
+            <p style={{ fontSize: '15px', color: C.muted, margin: '14px 0 0' }}>No requests.</p>
           )}
         </div>
 
-        <div style={{ border: `2px solid ${C.gold}`, padding: '18px' }}>
-          <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '12px' }}>UPLOAD REPORT</div>
+        <div style={panelStyle}>
+          <div className="hw-mono-label" style={{ marginBottom: '16px', display: 'block' }}>
+            Upload report
+          </div>
           <UploadReportForm accountId={profile.id} />
         </div>
 
-        <div style={{ border: `2px solid ${C.cyan}`, padding: '18px' }}>
-          <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '12px' }}>EXISTING REPORTS</div>
+        <div style={panelStyle}>
+          <div className="hw-mono-label">Existing reports</div>
           {reports && reports.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '14px 0 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {reports.map((r) => (
-                <li key={r.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', borderBottom: `1px solid ${C.panel}`, paddingBottom: '10px' }}>
-                  <span style={{ fontSize: '20px' }}><span style={{ color: C.gold }}>[{r.report_type.toUpperCase()}]</span> {r.title}</span>
-                  <a href={`/api/reports/download?id=${r.id}`} style={{ color: C.cyan, fontSize: '20px' }}>⬇ DOWNLOAD</a>
+                <li
+                  key={r.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                    borderBottom: `1px solid ${C.border}`,
+                    paddingBottom: '10px',
+                  }}
+                >
+                  <span style={{ fontSize: '15px' }}>
+                    {r.title}
+                    <span style={{ color: C.muted, fontSize: '13px' }}> · {r.report_type}</span>
+                  </span>
+                  <a href={`/api/reports/download?id=${r.id}`} style={{ color: C.accent, fontSize: '14px' }}>
+                    Download
+                  </a>
                 </li>
               ))}
             </ul>
           ) : (
-            <p style={{ fontSize: '20px', margin: 0 }}>NO REPORTS UPLOADED YET.</p>
+            <p style={{ fontSize: '15px', color: C.muted, margin: '14px 0 0' }}>No reports uploaded yet.</p>
           )}
         </div>
       </div>

@@ -1,12 +1,24 @@
-// Shared arcade palette + font reference for app-shell pages.
+// Design tokens for inline style objects. These reference the CSS custom
+// properties defined in app/globals.css, which is the only place hex
+// literals live.
 export const C = {
-  bg: '#0D0D0D',
-  gold: '#FFD700',
-  cyan: '#00E5FF',
-  panel: '#1A1A2E',
-  text: '#F0F0F0',
-  red: '#FF3B3B',
-  green: '#39FF14',
+  bg: 'var(--bg)',
+  surface: 'var(--surface)',
+  surface2: 'var(--surface-2)',
+  border: 'var(--border)',
+
+  accent: 'var(--accent)',
+  accentInk: 'var(--accent-ink)',
+
+  text: 'var(--text)',
+  muted: 'var(--muted)',
+
+  high: 'var(--sev-high)',
+  med: 'var(--sev-med)',
+  low: 'var(--sev-low)',
+  ok: 'var(--ok)',
 } as const;
 
-export const PRESS = 'var(--font-press-start), monospace';
+export const DISPLAY = 'var(--font-display), system-ui, sans-serif';
+export const BODY = 'var(--font-body), system-ui, sans-serif';
+export const MONO = 'var(--font-mono), ui-monospace, monospace';

@@ -18,13 +18,15 @@ export default async function RequestSessionPage() {
     .maybeSingle<SessionRequest>();
 
   return (
-    <Shell title="REQUEST A SESSION" subtitle="BOOK YOUR COVERAGE ASSESSMENT" right={<SignOutButton />}>
+    <Shell title="Request a session" subtitle="Book your security assessment." right={<SignOutButton />}>
       {pending ? (
         <div>
-          <p style={{ fontSize: '20px', color: C.green, letterSpacing: '1px', lineHeight: '1.5' }}>
-            ✓ YOU ALREADY HAVE A PENDING REQUEST. OUR TEAM WILL REVIEW IT AND APPROVE YOUR SESSION.
+          <p style={{ fontSize: '15px', color: C.ok, lineHeight: 1.6, margin: '0 0 20px' }}>
+            You already have a pending request. Our team will review it and approve your session.
           </p>
-          <Link href="/dashboard" style={{ color: C.cyan, fontSize: '20px' }}>← BACK TO DASHBOARD</Link>
+          <Link href="/dashboard" style={{ color: C.accent, fontSize: '14px' }}>
+            ← Back to dashboard
+          </Link>
         </div>
       ) : (
         <RequestSessionForm accountId={user.id} />

@@ -3,7 +3,8 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { C } from '@/lib/theme';
-import { inputStyle, labelStyle, buttonStyle } from '@/components/Shell';
+import { labelStyle } from '@/components/Shell';
+import { Button } from '@/components/ui/button';
 
 export function UploadReportForm({ accountId }: { accountId: string }) {
   const router = useRouter();
@@ -40,26 +41,26 @@ export function UploadReportForm({ accountId }: { accountId: string }) {
   return (
     <form ref={formRef} onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       <div>
-        <label style={labelStyle} htmlFor="title">REPORT TITLE</label>
-        <input id="title" style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Q2 Coverage Assessment" />
+        <label style={labelStyle} htmlFor="title">Report title</label>
+        <input id="title" className="hw-input" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Q2 coverage assessment" />
       </div>
       <div>
-        <label style={labelStyle} htmlFor="type">REPORT TYPE</label>
-        <select id="type" style={inputStyle} value={reportType} onChange={(e) => setReportType(e.target.value as typeof reportType)}>
-          <option value="technical">TECHNICAL</option>
-          <option value="summary">EXECUTIVE SUMMARY</option>
-          <option value="other">OTHER</option>
+        <label style={labelStyle} htmlFor="type">Report type</label>
+        <select id="type" className="hw-input" value={reportType} onChange={(e) => setReportType(e.target.value as typeof reportType)}>
+          <option value="technical">Technical</option>
+          <option value="summary">Executive summary</option>
+          <option value="other">Other</option>
         </select>
       </div>
       <div>
-        <label style={labelStyle} htmlFor="file">FILE (PDF, MAX 25MB)</label>
-        <input id="file" name="file" type="file" accept="application/pdf,.pdf" required style={{ ...inputStyle, padding: '10px' }} />
+        <label style={labelStyle} htmlFor="file">File (PDF, max 25MB)</label>
+        <input id="file" name="file" type="file" accept="application/pdf,.pdf" required className="hw-input" style={{ padding: '9px' }} />
       </div>
-      {error && <p style={{ color: C.red, fontSize: '18px', margin: '0' }}>⚠ {error}</p>}
-      {done && <p style={{ color: C.green, fontSize: '18px', margin: '0' }}>✓ REPORT UPLOADED</p>}
-      <button type="submit" style={{ ...buttonStyle, opacity: loading ? 0.6 : 1 }} disabled={loading}>
-        {loading ? 'UPLOADING...' : '▓▓ UPLOAD REPORT ▓▓'}
-      </button>
+      {error && <p style={{ color: C.high, fontSize: '14px', margin: '0' }}>{error}</p>}
+      {done && <p style={{ color: C.ok, fontSize: '14px', margin: '0' }}>Report uploaded.</p>}
+      <Button type="submit" disabled={loading} style={{ alignSelf: 'flex-start' }}>
+        {loading ? 'Uploading…' : 'Upload report'}
+      </Button>
     </form>
   );
 }

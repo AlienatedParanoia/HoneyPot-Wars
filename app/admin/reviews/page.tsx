@@ -1,10 +1,9 @@
-import Link from 'next/link';
-import { Shell } from '@/components/Shell';
+import { Shell, panelStyle, BackLink } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { AdminReviewForm } from '@/components/AdminReviewForm';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { C } from '@/lib/theme';
+import { C, MONO } from '@/lib/theme';
 import type { SessionRequest, Profile, Review } from '@/lib/types';
 
 type CheckRow = SessionRequest & {
@@ -26,24 +25,30 @@ export default async function AdminReviews() {
     .returns<CheckRow[]>();
 
   return (
-    <Shell title="POST REVIEWS" subtitle="WRITE A VERDICT ON A CLIENT CHECK" maxWidth="100%" right={<SignOutButton />}>
-      <Link href="/admin" style={{ color: C.cyan, fontSize: '18px' }}>← BACK TO CONSOLE</Link>
+    <Shell title="Post reviews" subtitle="Write a verdict on a client check" maxWidth="100%" right={<SignOutButton />}>
+      <BackLink />
       <div style={{ marginTop: '18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {checks && checks.length > 0 ? (
           checks.map((c) => (
-            <div key={c.id} style={{ border: `2px solid ${C.gold}`, padding: '16px' }}>
-              <div style={{ fontSize: '20px', lineHeight: '1.5' }}>
-                <span style={{ color: C.gold }}>{(c.profiles?.company_name || '—').toUpperCase()}</span>{' '}
-                <span style={{ opacity: 0.7 }}>{c.profiles?.email}</span>
+            <div key={c.id} style={panelStyle}>
+              <div style={{ fontSize: '15px' }}>
+                <span style={{ color: C.text, fontWeight: 600 }}>{c.profiles?.company_name || '—'}</span>{' '}
+                <span style={{ color: C.muted }}>{c.profiles?.email}</span>
               </div>
-              <div style={{ fontSize: '19px' }}>CHECK: <span style={{ color: C.cyan }}>{c.repo_url}</span> · {fmt(c.requested_at)} · {c.status.toUpperCase()}</div>
+              <div style={{ fontSize: '13px', color: C.muted, marginTop: '8px' }}>
+                <span style={{ fontFamily: MONO, color: C.accent }}>{c.repo_url}</span> · {fmt(c.requested_at)} ·{' '}
+                {c.status}
+              </div>
 
               {c.reviews && c.reviews.length > 0 && (
-                <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {c.reviews.map((rv) => (
-                    <div key={rv.id} style={{ background: C.panel, borderLeft: `3px solid ${C.gold}`, padding: '8px 12px' }}>
-                      {rv.verdict && <span className="font-press" style={{ fontSize: '10px', color: C.gold }}>{rv.verdict.toUpperCase()} · </span>}
-                      <span style={{ fontSize: '18px' }}>{rv.body}</span>
+                    <div
+                      key={rv.id}
+                      style={{ background: C.surface2, borderLeft: `2px solid ${C.accent}`, borderRadius: '6px', padding: '12px 14px' }}
+                    >
+                      {rv.verdict && <span style={{ fontSize: '13px', fontWeight: 600, color: C.accent }}>{rv.verdict} · </span>}
+                      <span style={{ fontSize: '14px', lineHeight: 1.6 }}>{rv.body}</span>
                     </div>
                   ))}
                 </div>
@@ -53,7 +58,7 @@ export default async function AdminReviews() {
             </div>
           ))
         ) : (
-          <p style={{ fontSize: '20px' }}>NO CHECKS TO REVIEW YET.</p>
+          <p style={{ fontSize: '15px', color: C.muted }}>No checks to review yet.</p>
         )}
       </div>
     </Shell>

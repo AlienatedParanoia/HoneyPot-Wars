@@ -1,27 +1,31 @@
 import type { Metadata } from 'next';
-import { Press_Start_2P, VT323 } from 'next/font/google';
+import { Archivo, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import { PixelatedCanvas } from '@/components/ui/pixel-cursor';
-import { FallingPattern } from '@/components/ui/falling-pattern';
 
-const pressStart = Press_Start_2P({
-  weight: '400',
+// Heavy weights only — the display face is used for headlines, never body copy.
+const archivo = Archivo({
+  weight: ['700', '800', '900'],
   subsets: ['latin'],
-  variable: '--font-press-start',
+  variable: '--font-display',
   display: 'swap',
 });
 
-const vt323 = VT323({
-  weight: '400',
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-vt323',
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Honeypot Wars — Coverage Assurance for the Fraud-Defence Generation',
+  title: 'Honeypot Wars — Adversarial Security Code Review',
   description:
-    'Honeypot Wars stress-tests your fraud defences against novel attack patterns and tells you exactly where your coverage fails.',
+    'Honeypot Wars runs an adversarial security review of your codebase and deployed app, and tells you exactly which vulnerabilities your tools miss.',
 };
 
 export default function RootLayout({
@@ -30,21 +34,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${pressStart.variable} ${vt323.variable}`}>
-      <body>
-        {/* Site-wide animated backdrop. Fixed, behind all content (z-index:0),
-            pointer-events:none so it never blocks clicks. Gold particles on the
-            near-black brand background; kept subtle via .hw-bg-layer opacity. */}
-        <div aria-hidden="true" className="hw-bg-layer">
-          <FallingPattern color="#FFD700" backgroundColor="#0D0D0D" duration={150} blurIntensity="1.25em" density={1} />
-        </div>
-        {/* All page content stacks above the backdrop. */}
-        <div className="hw-content">{children}</div>
-        {/* Site-wide pixel cursor overlay. pointer-events:none so it never blocks clicks. */}
-        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', pointerEvents: 'none', zIndex: 9999 }}>
-          <PixelatedCanvas />
-        </div>
-      </body>
+    <html lang="en" className={`${archivo.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

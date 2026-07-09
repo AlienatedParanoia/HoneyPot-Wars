@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { Shell } from '@/components/Shell';
+import { Shell, panelStyle, BackLink } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
@@ -22,24 +21,39 @@ export default async function AdminAllReports() {
     .returns<ReportRow[]>();
 
   return (
-    <Shell title="ALL POSTED REPORTS" subtitle={`${reports?.length ?? 0} TOTAL`} maxWidth="100%" right={<SignOutButton />}>
-      <Link href="/admin" style={{ color: C.cyan, fontSize: '18px' }}>← BACK TO CONSOLE</Link>
-      <div style={{ marginTop: '18px', border: `2px solid ${C.gold}`, padding: '18px' }}>
+    <Shell title="All posted reports" subtitle={`${reports?.length ?? 0} total`} maxWidth="100%" right={<SignOutButton />}>
+      <BackLink />
+      <div style={{ ...panelStyle, marginTop: '18px' }}>
         {reports && reports.length > 0 ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {reports.map((r) => (
-              <li key={r.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.panel}`, paddingBottom: '12px' }}>
-                <span style={{ fontSize: '20px', lineHeight: '1.5' }}>
-                  <span style={{ color: C.gold }}>[{r.report_type.toUpperCase()}]</span> {r.title}
-                  <span style={{ opacity: 0.7, fontSize: '17px' }}> · {(r.profiles?.company_name || r.profiles?.email || '—')}</span>
-                  <span style={{ opacity: 0.5, fontSize: '15px' }}> · {fmt(r.created_at)}</span>
+              <li
+                key={r.id}
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderBottom: `1px solid ${C.border}`,
+                  paddingBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '15px', lineHeight: 1.6 }}>
+                  <span style={{ color: C.text }}>{r.title}</span>
+                  <span style={{ color: C.muted, fontSize: '13px' }}>
+                    {' '}
+                    · {r.report_type} · {r.profiles?.company_name || r.profiles?.email || '—'} · {fmt(r.created_at)}
+                  </span>
                 </span>
-                <a href={`/api/reports/download?id=${r.id}`} style={{ color: C.cyan, fontSize: '20px' }}>⬇ DOWNLOAD</a>
+                <a href={`/api/reports/download?id=${r.id}`} style={{ color: C.accent, fontSize: '14px' }}>
+                  Download
+                </a>
               </li>
             ))}
           </ul>
         ) : (
-          <p style={{ fontSize: '20px', margin: 0 }}>NO REPORTS POSTED YET.</p>
+          <p style={{ fontSize: '15px', color: C.muted, margin: 0 }}>No reports posted yet.</p>
         )}
       </div>
     </Shell>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { C, PRESS } from '@/lib/theme';
+import { C } from '@/lib/theme';
 
 export function RequestActions({ requestId }: { requestId: string }) {
   const router = useRouter();
@@ -28,15 +28,27 @@ export function RequestActions({ requestId }: { requestId: string }) {
   }
 
   const btn = (color: string): React.CSSProperties => ({
-    fontFamily: PRESS, fontSize: '9px', letterSpacing: '1px', background: C.bg, color,
-    border: `2px solid ${color}`, padding: '8px 12px', cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 600,
+    fontFamily: 'inherit',
+    background: 'transparent',
+    color,
+    border: `1px solid ${color}`,
+    borderRadius: 'var(--r-pill)',
+    padding: '8px 16px',
+    cursor: loading !== null ? 'not-allowed' : 'pointer',
+    opacity: loading !== null ? 0.55 : 1,
   });
 
   return (
     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-      <button onClick={() => act('approve')} disabled={loading !== null} style={btn(C.green)}>{loading === 'approve' ? '...' : 'APPROVE'}</button>
-      <button onClick={() => act('reject')} disabled={loading !== null} style={btn(C.red)}>{loading === 'reject' ? '...' : 'REJECT'}</button>
-      {error && <span style={{ color: C.red, fontSize: '16px' }}>{error}</span>}
+      <button onClick={() => act('approve')} disabled={loading !== null} style={btn(C.ok)}>
+        {loading === 'approve' ? '…' : 'Approve'}
+      </button>
+      <button onClick={() => act('reject')} disabled={loading !== null} style={btn(C.high)}>
+        {loading === 'reject' ? '…' : 'Reject'}
+      </button>
+      {error && <span style={{ color: C.high, fontSize: '13px' }}>{error}</span>}
     </div>
   );
 }

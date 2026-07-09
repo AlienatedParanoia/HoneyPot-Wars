@@ -1,20 +1,20 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Shell, buttonStyle } from '@/components/Shell';
+import { Shell, panelStyle } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
+import { Button } from '@/components/ui/button';
 import { requireUser, isAdminUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { C } from '@/lib/theme';
+import { C, MONO } from '@/lib/theme';
 import type { Profile, SessionRequest, Report, Review } from '@/lib/types';
 
 type CheckRow = SessionRequest & { reviews: Review[] | null };
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: C.gold,
-  approved: C.green,
-  rejected: C.red,
-  active: C.green,
-  suspended: C.red,
+  pending: C.muted,
+  approved: C.ok,
+  rejected: C.high,
+  active: C.ok,
+  suspended: C.high,
 };
 
 function fmt(d: string) {
@@ -39,47 +39,65 @@ export default async function DashboardPage() {
   ]);
 
   const hasPending = (checks ?? []).some((c) => c.status === 'pending');
+  const status = profile?.account_status ?? 'pending';
 
   return (
     <Shell
-      title={`WELCOME, ${(profile?.company_name || user.email || 'OPERATOR').toUpperCase()}`}
-      subtitle="YOUR COVERAGE DASHBOARD"
+      title={`Welcome, ${profile?.company_name || user.email || 'operator'}`}
+      subtitle="Your security dashboard"
       maxWidth="900px"
       right={<SignOutButton />}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Account status + new-check CTA */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', border: `2px solid ${C.gold}`, padding: '18px' }}>
+        <div
+          style={{
+            ...panelStyle,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '16px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div>
-            <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '8px' }}>ACCOUNT STATUS</div>
-            <div className="font-press" style={{ fontSize: '14px', color: STATUS_COLOR[profile?.account_status ?? 'pending'] ?? C.text, letterSpacing: '1px' }}>
-              {(profile?.account_status ?? 'pending').toUpperCase()}
+            <div className="hw-mono-label">Account status</div>
+            <div style={{ fontSize: '18px', fontWeight: 600, color: STATUS_COLOR[status] ?? C.text, marginTop: '8px' }}>
+              {status}
             </div>
           </div>
-          {!hasPending && <Link href="/request-session" style={buttonStyle}>▓▓ REQUEST A CHECK ▓▓</Link>}
+          {!hasPending && (
+            <Button href="/request-session" size="sm">
+              Request a check
+            </Button>
+          )}
         </div>
 
         {/* Past checks (history) with any admin reviews attached */}
-        <div style={{ border: `2px solid ${C.cyan}`, padding: '18px' }}>
-          <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '12px' }}>YOUR CHECKS</div>
+        <div style={panelStyle}>
+          <div className="hw-mono-label">Your checks</div>
           {checks && checks.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '18px 0 0', display: 'flex', flexDirection: 'column', gap: '18px' }}>
               {checks.map((c) => (
-                <li key={c.id} style={{ borderBottom: `1px solid ${C.panel}`, paddingBottom: '14px' }}>
-                  <div style={{ fontSize: '20px', lineHeight: '1.5' }}>
-                    <span style={{ color: C.cyan }}>{c.repo_url}</span>
-                  </div>
-                  <div style={{ fontSize: '18px', lineHeight: '1.5' }}>
-                    {fmt(c.requested_at)} · STATUS:{' '}
-                    <span className="font-press" style={{ fontSize: '10px', color: STATUS_COLOR[c.status] ?? C.text }}>{c.status.toUpperCase()}</span>
+                <li key={c.id} style={{ borderBottom: `1px solid ${C.border}`, paddingBottom: '16px' }}>
+                  <div style={{ fontFamily: MONO, fontSize: '14px', color: C.accent, wordBreak: 'break-all' }}>{c.repo_url}</div>
+                  <div style={{ fontSize: '13px', color: C.muted, marginTop: '6px' }}>
+                    {fmt(c.requested_at)} · <span style={{ color: STATUS_COLOR[c.status] ?? C.text }}>{c.status}</span>
                   </div>
                   {c.reviews && c.reviews.length > 0 && (
-                    <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {c.reviews.map((rv) => (
-                        <div key={rv.id} style={{ background: C.panel, borderLeft: `3px solid ${C.gold}`, padding: '10px 12px' }}>
-                          {rv.verdict && <div className="font-press" style={{ fontSize: '10px', color: C.gold, marginBottom: '6px' }}>{rv.verdict.toUpperCase()}</div>}
-                          <div style={{ fontSize: '19px', lineHeight: '1.45' }}>{rv.body}</div>
-                          <div style={{ fontSize: '15px', color: C.cyan, marginTop: '6px' }}>— HONEYPOT WARS · {fmt(rv.created_at)}</div>
+                        <div
+                          key={rv.id}
+                          style={{ background: C.surface2, borderLeft: `2px solid ${C.accent}`, borderRadius: '6px', padding: '14px 16px' }}
+                        >
+                          {rv.verdict && (
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: C.accent, marginBottom: '8px' }}>{rv.verdict}</div>
+                          )}
+                          <div style={{ fontSize: '14px', lineHeight: 1.6, color: C.text }}>{rv.body}</div>
+                          <div style={{ fontSize: '12px', color: C.muted, marginTop: '10px' }}>
+                            — Honeypot Wars · {fmt(rv.created_at)}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -88,30 +106,47 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <div>
-              <p style={{ fontSize: '20px', margin: '0 0 14px' }}>NO CHECKS YET.</p>
-              <Link href="/request-session" style={buttonStyle}>▓▓ REQUEST YOUR FIRST CHECK ▓▓</Link>
+            <div style={{ marginTop: '16px' }}>
+              <p style={{ fontSize: '15px', color: C.muted, margin: '0 0 16px' }}>No checks yet.</p>
+              <Button href="/request-session" size="sm">
+                Request your first check
+              </Button>
             </div>
           )}
         </div>
 
         {/* Reports — downloadable */}
-        <div style={{ border: `2px solid ${C.gold}`, padding: '18px' }}>
-          <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '12px' }}>YOUR REPORTS</div>
+        <div style={panelStyle}>
+          <div className="hw-mono-label">Your reports</div>
           {reports && reports.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '18px 0 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {reports.map((r) => (
-                <li key={r.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.panel}`, paddingBottom: '12px' }}>
-                  <span style={{ fontSize: '20px' }}>
-                    <span style={{ color: C.gold }}>[{r.report_type.toUpperCase()}]</span> {r.title}
-                    <span style={{ color: C.text, opacity: 0.6, fontSize: '16px' }}> · {fmt(r.created_at)}</span>
+                <li
+                  key={r.id}
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: `1px solid ${C.border}`,
+                    paddingBottom: '14px',
+                  }}
+                >
+                  <span style={{ fontSize: '15px', color: C.text }}>
+                    {r.title}
+                    <span style={{ color: C.muted, fontSize: '13px' }}> · {r.report_type} · {fmt(r.created_at)}</span>
                   </span>
-                  <a href={`/api/reports/download?id=${r.id}`} style={{ color: C.cyan, fontSize: '20px', letterSpacing: '1px' }}>⬇ DOWNLOAD</a>
+                  <a href={`/api/reports/download?id=${r.id}`} style={{ color: C.accent, fontSize: '14px' }}>
+                    Download
+                  </a>
                 </li>
               ))}
             </ul>
           ) : (
-            <p style={{ fontSize: '20px', margin: 0 }}>NO REPORTS YET. THEY&apos;LL APPEAR HERE ONCE YOUR ASSESSMENT IS COMPLETE.</p>
+            <p style={{ fontSize: '15px', color: C.muted, margin: '16px 0 0' }}>
+              No reports yet. They&apos;ll appear here once your assessment is complete.
+            </p>
           )}
         </div>
       </div>

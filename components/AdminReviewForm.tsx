@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { C } from '@/lib/theme';
-import { inputStyle, labelStyle, buttonStyle } from '@/components/Shell';
+import { labelStyle } from '@/components/Shell';
+import { Button } from '@/components/ui/button';
 
 export function AdminReviewForm({ accountId, sessionRequestId }: { accountId: string; sessionRequestId: string }) {
   const router = useRouter();
@@ -37,20 +38,20 @@ export function AdminReviewForm({ accountId, sessionRequestId }: { accountId: st
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+    <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
       <div>
-        <label style={labelStyle}>VERDICT (OPTIONAL, SHORT)</label>
-        <input style={inputStyle} value={verdict} onChange={(e) => setVerdict(e.target.value)} placeholder="e.g. NEEDS ATTENTION" maxLength={80} />
+        <label style={labelStyle}>Verdict (optional, short)</label>
+        <input className="hw-input" value={verdict} onChange={(e) => setVerdict(e.target.value)} placeholder="e.g. Needs attention" maxLength={80} />
       </div>
       <div>
-        <label style={labelStyle}>REVIEW</label>
-        <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={body} onChange={(e) => setBody(e.target.value)} required />
+        <label style={labelStyle}>Review</label>
+        <textarea className="hw-input" style={{ minHeight: '80px', resize: 'vertical' }} value={body} onChange={(e) => setBody(e.target.value)} required />
       </div>
-      {error && <p style={{ color: C.red, fontSize: '17px', margin: 0 }}>⚠ {error}</p>}
-      {done && <p style={{ color: C.green, fontSize: '17px', margin: 0 }}>✓ REVIEW POSTED</p>}
-      <button type="submit" style={{ ...buttonStyle, fontSize: '10px', padding: '10px 14px', opacity: loading ? 0.6 : 1 }} disabled={loading}>
-        {loading ? '...' : '▓ POST REVIEW ▓'}
-      </button>
+      {error && <p style={{ color: C.high, fontSize: '14px', margin: 0 }}>{error}</p>}
+      {done && <p style={{ color: C.ok, fontSize: '14px', margin: 0 }}>Review posted.</p>}
+      <Button type="submit" size="sm" disabled={loading} style={{ alignSelf: 'flex-start' }}>
+        {loading ? '…' : 'Post review'}
+      </Button>
     </form>
   );
 }
