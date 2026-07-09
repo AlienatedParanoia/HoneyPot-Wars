@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Shell } from '@/components/Shell';
+import { Shell, panelStyle, BackLink } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
@@ -23,25 +23,40 @@ export default async function AdminUsers() {
   const users = (profiles ?? []).filter((p) => !isAdminEmail(p.email));
 
   return (
-    <Shell title="ALL USERS" subtitle={`${users.length} REGISTERED`} maxWidth="100%" right={<SignOutButton />}>
-      <Link href="/admin" style={{ color: C.cyan, fontSize: '18px' }}>← BACK TO CONSOLE</Link>
-      <div style={{ marginTop: '18px', border: `2px solid ${C.gold}`, padding: '18px' }}>
+    <Shell title="All users" subtitle={`${users.length} registered`} maxWidth="100%" right={<SignOutButton />}>
+      <BackLink />
+      <div style={{ ...panelStyle, marginTop: '18px' }}>
         {users.length > 0 ? (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {users.map((u) => (
-              <li key={u.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.panel}`, paddingBottom: '12px' }}>
-                <span style={{ fontSize: '20px', lineHeight: '1.5' }}>
-                  <span style={{ color: C.gold }}>{(u.company_name || '—').toUpperCase()}</span>{' '}
-                  <span style={{ opacity: 0.7 }}>{u.email}</span>{' '}
-                  <span style={{ color: u.account_status === 'active' ? C.green : C.gold, fontSize: '16px' }}>[{u.account_status}]</span>
-                  <span style={{ opacity: 0.5, fontSize: '15px' }}> · joined {fmt(u.created_at)}</span>
+              <li
+                key={u.id}
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderBottom: `1px solid ${C.border}`,
+                  paddingBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '15px', lineHeight: 1.6 }}>
+                  <span style={{ color: C.text, fontWeight: 600 }}>{u.company_name || '—'}</span>{' '}
+                  <span style={{ color: C.muted }}>{u.email}</span>{' '}
+                  <span style={{ color: u.account_status === 'active' ? C.ok : C.muted, fontSize: '13px' }}>
+                    [{u.account_status}]
+                  </span>
+                  <span style={{ color: C.muted, fontSize: '13px' }}> · joined {fmt(u.created_at)}</span>
                 </span>
-                <Link href={`/admin/clients/${u.id}`} style={{ color: C.cyan, fontSize: '18px' }}>MANAGE →</Link>
+                <Link href={`/admin/clients/${u.id}`} style={{ color: C.accent, fontSize: '14px' }}>
+                  Manage →
+                </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p style={{ fontSize: '20px', margin: 0 }}>NO USERS YET.</p>
+          <p style={{ fontSize: '15px', color: C.muted, margin: 0 }}>No users yet.</p>
         )}
       </div>
     </Shell>

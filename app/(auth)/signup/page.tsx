@@ -6,7 +6,7 @@ import { getUser } from '@/lib/auth';
 export default async function SignupPage() {
   if (await getUser()) redirect('/dashboard');
   return (
-    <Shell title="CREATE ACCOUNT" subtitle="START YOUR COVERAGE ASSESSMENT" maxWidth="560px">
+    <Shell title="Create account" subtitle="Start your security assessment." maxWidth="560px">
       <AuthForm mode="signup" />
     </Shell>
   );

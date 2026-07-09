@@ -4,13 +4,18 @@ import { SignOutButton } from '@/components/SignOutButton';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { isAdminEmail } from '@/config/env';
-import { C } from '@/lib/theme';
+import { C, DISPLAY } from '@/lib/theme';
 import type { Profile, SessionRequest, Report } from '@/lib/types';
 
-const navCard = (color: string): React.CSSProperties => ({
-  flex: '1', minWidth: '200px', border: `2px solid ${color}`, padding: '18px',
-  textDecoration: 'none', color: C.text,
-});
+const navCard: React.CSSProperties = {
+  flex: '1',
+  minWidth: '200px',
+  border: `1px solid ${C.border}`,
+  borderRadius: 'var(--r-card)',
+  padding: '22px',
+  textDecoration: 'none',
+  color: C.text,
+};
 
 export default async function AdminHome() {
   await requireAdmin();
@@ -25,44 +30,61 @@ export default async function AdminHome() {
   // Admins are not clients — exclude them from the client list.
   const clients = (profiles ?? []).filter((p) => !isAdminEmail(p.email));
 
+  const stat: React.CSSProperties = { fontFamily: DISPLAY, fontWeight: 800, fontSize: '32px', color: C.accent };
+
   return (
-    <Shell title="ADMIN CONSOLE" subtitle="HONEYPOT WARS CONTROL PANEL" maxWidth="100%" right={<SignOutButton />}>
+    <Shell title="Admin console" subtitle="Honeypot Wars control panel" maxWidth="100%" right={<SignOutButton />}>
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '24px' }}>
-        <Link href="/admin/requests" style={navCard(C.gold)}>
-          <div className="font-press" style={{ fontSize: '24px', color: C.gold }}>{pending?.length ?? 0}</div>
-          <div style={{ fontSize: '17px', letterSpacing: '2px', marginTop: '8px' }}>PENDING REQUESTS →</div>
+        <Link href="/admin/requests" style={navCard}>
+          <div style={stat}>{pending?.length ?? 0}</div>
+          <div style={{ fontSize: '14px', color: C.muted, marginTop: '10px' }}>Pending requests →</div>
         </Link>
-        <Link href="/admin/users" style={navCard(C.cyan)}>
-          <div className="font-press" style={{ fontSize: '24px', color: C.cyan }}>{clients.length}</div>
-          <div style={{ fontSize: '17px', letterSpacing: '2px', marginTop: '8px' }}>ALL USERS →</div>
+        <Link href="/admin/users" style={navCard}>
+          <div style={stat}>{clients.length}</div>
+          <div style={{ fontSize: '14px', color: C.muted, marginTop: '10px' }}>All users →</div>
         </Link>
-        <Link href="/admin/reports" style={navCard(C.gold)}>
-          <div className="font-press" style={{ fontSize: '24px', color: C.gold }}>{reports?.length ?? 0}</div>
-          <div style={{ fontSize: '17px', letterSpacing: '2px', marginTop: '8px' }}>ALL REPORTS →</div>
+        <Link href="/admin/reports" style={navCard}>
+          <div style={stat}>{reports?.length ?? 0}</div>
+          <div style={{ fontSize: '14px', color: C.muted, marginTop: '10px' }}>All reports →</div>
         </Link>
-        <Link href="/admin/reviews" style={navCard(C.cyan)}>
-          <div className="font-press" style={{ fontSize: '24px', color: C.cyan }}>✎</div>
-          <div style={{ fontSize: '17px', letterSpacing: '2px', marginTop: '8px' }}>POST REVIEWS →</div>
+        <Link href="/admin/reviews" style={navCard}>
+          <div style={stat}>✎</div>
+          <div style={{ fontSize: '14px', color: C.muted, marginTop: '10px' }}>Post reviews →</div>
         </Link>
       </div>
 
-      <div style={{ border: `2px solid ${C.gold}`, padding: '18px' }}>
-        <div style={{ fontSize: '18px', letterSpacing: '2px', marginBottom: '12px' }}>CLIENTS</div>
+      <div style={{ border: `1px solid ${C.border}`, borderRadius: 'var(--r-card)', padding: '22px' }}>
+        <div className="hw-mono-label">Clients</div>
         {clients.length > 0 ? (
-          <ul style={{ listStyle: 'none', padding: '0', margin: '0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <ul style={{ listStyle: 'none', padding: '0', margin: '18px 0 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {clients.map((c) => (
-              <li key={c.id} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.panel}`, paddingBottom: '10px' }}>
-                <span style={{ fontSize: '20px' }}>
-                  <span style={{ color: C.gold }}>{(c.company_name || '—').toUpperCase()}</span>{' '}
-                  <span style={{ color: C.text, opacity: 0.7 }}>{c.email}</span>{' '}
-                  <span style={{ color: c.account_status === 'active' ? C.green : C.gold, fontSize: '16px' }}>[{c.account_status}]</span>
+              <li
+                key={c.id}
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderBottom: `1px solid ${C.border}`,
+                  paddingBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '15px' }}>
+                  <span style={{ color: C.text, fontWeight: 600 }}>{c.company_name || '—'}</span>{' '}
+                  <span style={{ color: C.muted }}>{c.email}</span>{' '}
+                  <span style={{ color: c.account_status === 'active' ? C.ok : C.muted, fontSize: '13px' }}>
+                    [{c.account_status}]
+                  </span>
                 </span>
-                <Link href={`/admin/clients/${c.id}`} style={{ color: C.cyan, fontSize: '18px', letterSpacing: '1px' }}>MANAGE →</Link>
+                <Link href={`/admin/clients/${c.id}`} style={{ color: C.accent, fontSize: '14px' }}>
+                  Manage →
+                </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p style={{ fontSize: '20px', margin: '0' }}>NO CLIENTS YET.</p>
+          <p style={{ fontSize: '15px', color: C.muted, margin: '16px 0 0' }}>No clients yet.</p>
         )}
       </div>
     </Shell>
