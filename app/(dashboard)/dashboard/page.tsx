@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { Shell, panelStyle } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { Button } from '@/components/ui/button';
-import { requireUser, isAdminUser } from '@/lib/auth';
+import { requireUser, isCurrentUserAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { C, MONO } from '@/lib/theme';
 import type { Profile, SessionRequest, Report, Review } from '@/lib/types';
@@ -24,7 +24,7 @@ function fmt(d: string) {
 export default async function DashboardPage() {
   const user = await requireUser();
   // Admin-only identity: admins use /admin, never the client home (defense in depth).
-  if (isAdminUser(user)) redirect('/admin');
+  if (await isCurrentUserAdmin()) redirect('/admin');
 
   const supabase = createClient();
   const [{ data: profile }, { data: checks }, { data: reports }] = await Promise.all([

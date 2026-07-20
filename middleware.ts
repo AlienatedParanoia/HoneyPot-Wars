@@ -32,6 +32,14 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+
+  // Defense-in-depth: admin API routes require an authenticated caller. The
+  // handlers also enforce admin, but guarding here means a future /api/admin
+  // route can't be left publicly reachable by omission.
+  if (path.startsWith('/api/admin') && !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const isClientArea =
     path.startsWith('/dashboard') || path.startsWith('/request-session');
   const isProtected = isClientArea || path.startsWith('/admin');
@@ -43,12 +51,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin email allowlist, parsed here (Edge) directly from env.
-  const admins = (process.env.ADMIN_EMAILS ?? '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  const isAdmin = !!user?.email && admins.includes(user.email.toLowerCase());
+  // Admin status from the is_admin() RPC (admin_emails table) — the SAME source
+  // pages and RLS use, so middleware routing can never disagree with them.
+  // Resolved only when it affects routing, to avoid an RPC on every request.
+  let isAdmin = false;
+  if (user && (isClientArea || path.startsWith('/admin'))) {
+    const { data } = await supabase.rpc('is_admin');
+    isAdmin = data === true;
+  }
 
   // Admin-only identity: admins never use the client area — bounce to /admin.
   if (isClientArea && isAdmin) {

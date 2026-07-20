@@ -27,6 +27,11 @@ export async function POST(request: NextRequest) {
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: 'File exceeds 25 MB limit' }, { status: 400 });
   }
+  // Enforce PDF server-side — the browser accept="" filter is not a control.
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (!isPdf) {
+    return NextResponse.json({ error: 'Only PDF files are accepted' }, { status: 400 });
+  }
 
   const parsed = metaSchema.safeParse({
     accountId: form.get('accountId'),
@@ -38,6 +43,27 @@ export async function POST(request: NextRequest) {
   const { accountId, title, reportType, sessionRequestId } = parsed.data;
 
   const db = createAdminClient();
+
+  // The report (and its storage folder) belongs to accountId, so verify the
+  // account exists and — if a session request is linked — that it belongs to
+  // THIS account, otherwise a mis-set accountId leaks a report to another tenant.
+  const { data: acct } = await db
+    .from('profiles')
+    .select('id')
+    .eq('id', accountId)
+    .maybeSingle<{ id: string }>();
+  if (!acct) return NextResponse.json({ error: 'Unknown account' }, { status: 400 });
+  if (sessionRequestId) {
+    const { data: sr } = await db
+      .from('session_requests')
+      .select('account_id')
+      .eq('id', sessionRequestId)
+      .maybeSingle<{ account_id: string }>();
+    if (!sr || sr.account_id !== accountId) {
+      return NextResponse.json({ error: 'Session request does not belong to this account' }, { status: 400 });
+    }
+  }
+
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const storagePath = `${accountId}/${crypto.randomUUID()}-${safeName}`;
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -45,7 +71,8 @@ export async function POST(request: NextRequest) {
   const { error: upErr } = await db.storage
     .from('reports')
     .upload(storagePath, bytes, {
-      contentType: file.type || 'application/octet-stream',
+      // Fixed type — we only accept PDFs, never trust the client-declared type.
+      contentType: 'application/pdf',
       upsert: false,
     });
   if (upErr) return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

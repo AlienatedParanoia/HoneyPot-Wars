@@ -30,6 +30,38 @@ as $$
   );
 $$;
 
+-- True when the caller is a platform admin (by JWT email) OR the trusted
+-- server-side service-role client. The service role carries no email claim, so
+-- is_admin() alone returns false for it — this lets privileged server writes
+-- (e.g. the approve endpoint activating an account) through, while still
+-- blocking ordinary authenticated clients.
+create or replace function public.is_privileged()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select public.is_admin()
+    or coalesce(
+         nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role',
+         ''
+       ) = 'service_role';
+$$;
+
+-- Returns the admin allowlist, but only to callers who are themselves admins.
+-- Lets server components filter admin accounts out of client lists using the
+-- admin_emails table as the single source of truth (no divergent env list).
+create or replace function public.admin_emails_list()
+returns setof text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select email from public.admin_emails where public.is_admin();
+$$;
+
 -- ============================================================
 -- profiles (1:1 with auth.users)
 -- ============================================================
@@ -69,7 +101,12 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- Prevent clients from self-activating: only admins may change account_status.
+-- Pin the identity/scope columns for ordinary clients. Only privileged writers
+-- (platform admins, or the server-side service-role client) may change
+-- account_status, registered_domain, or email — so a client cannot self-activate,
+-- rewrite the scope-lock domain used to authorise live probes (§A.1/§A.6), or
+-- spoof their email. is_privileged() (not is_admin()) is used so the approve
+-- endpoint's service-role activation is not silently reverted here.
 create or replace function public.guard_profile_update()
 returns trigger
 language plpgsql
@@ -77,8 +114,10 @@ security definer
 set search_path = public
 as $$
 begin
-  if not public.is_admin() then
-    new.account_status := old.account_status;
+  if not public.is_privileged() then
+    new.account_status    := old.account_status;
+    new.registered_domain := old.registered_domain;
+    new.email             := old.email;
   end if;
   return new;
 end;
@@ -116,16 +155,32 @@ create table if not exists public.session_requests (
 alter table public.session_requests enable row level security;
 create index if not exists session_requests_account_idx on public.session_requests(account_id);
 create index if not exists session_requests_status_idx on public.session_requests(status);
+-- At most one pending request per account, enforced server-side (not just in the UI).
+create unique index if not exists session_requests_one_pending_idx
+  on public.session_requests(account_id) where status = 'pending';
 
 drop policy if exists "requests_select_own_or_admin" on public.session_requests;
 create policy "requests_select_own_or_admin" on public.session_requests
   for select using (account_id = auth.uid() or public.is_admin());
 
--- Clients may submit their own requests with a signed consent; admins too.
+-- Clients may submit their OWN requests, with signed consent, and only in the
+-- initial pending/unreviewed state — they can never self-issue an 'approved'
+-- record or forge reviewed_by/reviewed_at (that is the authorisation gate).
+-- Suspended (flagged) accounts cannot submit new requests. Admins are unrestricted.
 drop policy if exists "requests_insert_own" on public.session_requests;
 create policy "requests_insert_own" on public.session_requests
   for insert with check (
-    (account_id = auth.uid() and consent_signed = true) or public.is_admin()
+    (
+      account_id = auth.uid()
+      and consent_signed = true
+      and status = 'pending'
+      and reviewed_at is null
+      and reviewed_by is null
+      and (
+        select p.account_status from public.profiles p where p.id = auth.uid()
+      ) is distinct from 'suspended'
+    )
+    or public.is_admin()
   );
 
 drop policy if exists "requests_update_admin" on public.session_requests;

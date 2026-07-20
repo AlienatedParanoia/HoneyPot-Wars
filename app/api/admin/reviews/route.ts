@@ -20,6 +20,27 @@ export async function POST(request: NextRequest) {
   const { accountId, sessionRequestId, body, verdict } = parsed.data;
 
   const db = createAdminClient();
+
+  // A review is shown to the client whose account_id it carries, so verify the
+  // account exists and — if a session request is linked — that it belongs to
+  // THIS account, otherwise a mis-set accountId leaks a review to another tenant.
+  const { data: acct } = await db
+    .from('profiles')
+    .select('id')
+    .eq('id', accountId)
+    .maybeSingle<{ id: string }>();
+  if (!acct) return NextResponse.json({ error: 'Unknown account' }, { status: 400 });
+  if (sessionRequestId) {
+    const { data: sr } = await db
+      .from('session_requests')
+      .select('account_id')
+      .eq('id', sessionRequestId)
+      .maybeSingle<{ account_id: string }>();
+    if (!sr || sr.account_id !== accountId) {
+      return NextResponse.json({ error: 'Session request does not belong to this account' }, { status: 400 });
+    }
+  }
+
   const { error } = await db.from('reviews').insert({
     account_id: accountId,
     session_request_id: sessionRequestId ?? null,

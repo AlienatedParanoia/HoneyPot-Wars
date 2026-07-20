@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { isAdminEmail } from '@/config/env';
 import type { User } from '@supabase/supabase-js';
 
 // Returns the signed-in user or null. Use in Server Components / route handlers.
@@ -19,13 +18,18 @@ export async function requireUser(): Promise<User> {
   return user;
 }
 
-// Requires an admin user (email allowlist); redirects otherwise.
-export async function requireAdmin(): Promise<User> {
-  const user = await requireUser();
-  if (!isAdminEmail(user.email)) redirect('/dashboard');
-  return user;
+// Admin status comes from the admin_emails table via the is_admin() RPC — the
+// same authority RLS uses — so the app layer and the database can never diverge.
+// Fails closed on any RPC error.
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc('is_admin');
+  return !error && data === true;
 }
 
-export function isAdminUser(user: User | null): boolean {
-  return isAdminEmail(user?.email);
+// Requires an admin user; redirects otherwise.
+export async function requireAdmin(): Promise<User> {
+  const user = await requireUser();
+  if (!(await isCurrentUserAdmin())) redirect('/dashboard');
+  return user;
 }

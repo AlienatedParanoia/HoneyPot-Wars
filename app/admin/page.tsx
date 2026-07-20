@@ -3,7 +3,6 @@ import { Shell } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { isAdminEmail } from '@/config/env';
 import { C, DISPLAY } from '@/lib/theme';
 import type { Profile, SessionRequest, Report } from '@/lib/types';
 
@@ -21,14 +20,19 @@ export default async function AdminHome() {
   await requireAdmin();
   const supabase = createClient();
 
-  const [{ data: profiles }, { data: pending }, { data: reports }] = await Promise.all([
+  const [{ data: profiles }, { data: pending }, { data: reports }, { data: adminEmails }] = await Promise.all([
     supabase.from('profiles').select('*').order('created_at', { ascending: false }).returns<Profile[]>(),
     supabase.from('session_requests').select('id').eq('status', 'pending').returns<Pick<SessionRequest, 'id'>[]>(),
     supabase.from('reports').select('id').returns<Pick<Report, 'id'>[]>(),
+    supabase.rpc('admin_emails_list'),
   ]);
 
-  // Admins are not clients — exclude them from the client list.
-  const clients = (profiles ?? []).filter((p) => !isAdminEmail(p.email));
+  // Admins are not clients — exclude them from the client list. The admin set
+  // comes from the admin_emails table (single source of truth), not an env list.
+  const adminSet = new Set(
+    ((adminEmails as string[] | null) ?? []).map((e) => e.toLowerCase()),
+  );
+  const clients = (profiles ?? []).filter((p) => !adminSet.has(p.email.toLowerCase()));
 
   const stat: React.CSSProperties = { fontFamily: DISPLAY, fontWeight: 800, fontSize: '32px', color: C.accent };
 

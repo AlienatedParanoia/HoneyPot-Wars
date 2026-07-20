@@ -22,6 +22,9 @@ export function getPublicEnv(): z.infer<typeof publicSchema> {
 
 const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  // Seed reference only: the authoritative admin allowlist is the admin_emails
+  // table in the database (see supabase/seed.sql), which both RLS and the app
+  // read via is_admin(). Keep this in sync with that table when seeding.
   ADMIN_EMAILS: z
     .string()
     .min(1)
@@ -42,9 +45,4 @@ export function getServerEnv(): z.infer<typeof serverSchema> {
     ADMIN_EMAILS: process.env.ADMIN_EMAILS,
   });
   return cachedServerEnv;
-}
-
-export function isAdminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  return getServerEnv().ADMIN_EMAILS.includes(email.toLowerCase());
 }

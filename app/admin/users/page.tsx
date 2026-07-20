@@ -3,7 +3,6 @@ import { Shell, panelStyle, BackLink } from '@/components/Shell';
 import { SignOutButton } from '@/components/SignOutButton';
 import { requireAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { isAdminEmail } from '@/config/env';
 import { C } from '@/lib/theme';
 import type { Profile } from '@/lib/types';
 
@@ -14,13 +13,16 @@ function fmt(d: string) {
 export default async function AdminUsers() {
   await requireAdmin();
   const supabase = createClient();
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .returns<Profile[]>();
+  const [{ data: profiles }, { data: adminEmails }] = await Promise.all([
+    supabase.from('profiles').select('*').order('created_at', { ascending: false }).returns<Profile[]>(),
+    supabase.rpc('admin_emails_list'),
+  ]);
 
-  const users = (profiles ?? []).filter((p) => !isAdminEmail(p.email));
+  // Exclude admin accounts using the admin_emails table (single source of truth).
+  const adminSet = new Set(
+    ((adminEmails as string[] | null) ?? []).map((e) => e.toLowerCase()),
+  );
+  const users = (profiles ?? []).filter((p) => !adminSet.has(p.email.toLowerCase()));
 
   return (
     <Shell title="All users" subtitle={`${users.length} registered`} maxWidth="100%" right={<SignOutButton />}>
